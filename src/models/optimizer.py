@@ -71,34 +71,27 @@ def _balancear(
         return assign
 
     media = n_clientes / n_ancoras
-    limite = media * (tolerancia_pct / 100.0)
+    limite = max(0.0, media * (tolerancia_pct / 100.0))
 
     for _ in range(max_iter):
         counts = np.bincount(assign, minlength=n_ancoras).astype(float)
-        sobrecarga = np.where(counts > media + limite)[0]
-        falta = np.where(counts < media - limite)[0]
-        if len(sobrecarga) == 0 or len(falta) == 0:
+        acima = counts.max() > media + limite
+        abaixo = counts.min() < media - limite
+        if not acima and not abaixo:
             break
 
-        moved = False
-        for s in sobrecarga:
-            for f in falta:
-                candidatos = np.where(assign == s)[0]
-                if len(candidatos) == 0:
-                    continue
-                arrependimento = dist[candidatos, f] - dist[candidatos, s]
-                ordem = np.argsort(arrependimento)
-                for idx in ordem:
-                    i = candidatos[idx]
-                    assign[i] = f
-                    moved = True
-                    break
-                if moved:
-                    break
-            if moved:
-                break
-        if not moved:
+        s = int(counts.argmax())
+        f = int(counts.argmin())
+        if s == f or counts[s] - counts[f] <= 1:
             break
+
+        candidatos = np.where(assign == s)[0]
+        if len(candidatos) == 0:
+            break
+
+        arrependimento = dist[candidatos, f] - dist[candidatos, s]
+        i = int(candidatos[np.argmin(arrependimento)])
+        assign[i] = f
 
     return assign
 
@@ -123,10 +116,21 @@ def otimizar_regiao(
     ancoras = _filtrar_ancoras(ven, n_pautas)
     dist = _matriz_distancias(cli, ancoras)
     assign = _atribuir_nearest(dist)
-    assign = _balancear(dist, assign, len(ancoras), tolerancia_pct)
+    dist_nearest = dist[np.arange(len(cli)), assign]
+    dentro = dist_nearest <= limiar_km
+
+    if dentro.any():
+        idx = np.where(dentro)[0]
+        assign_dentro = _balancear(
+            dist[idx][:, :],
+            assign[idx].copy(),
+            len(ancoras),
+            tolerancia_pct,
+        )
+        assign[idx] = assign_dentro
 
     dist_atribuida = dist[np.arange(len(cli)), assign]
-    fora = dist_atribuida > limiar_km
+    fora = ~dentro
 
     pauta_sugerida = ancoras.loc[assign, "pauta"].to_numpy()
     codigo_sugerido = ancoras.loc[assign, "codigo_vendedor"].to_numpy()
@@ -144,7 +148,8 @@ def otimizar_regiao(
     resultado["distancia_km"] = np.round(dist_atribuida, 2)
     resultado["status"] = status
 
-    media_alvo = len(cli) / len(ancoras)
+    n_atribuidos = int((~fora).sum())
+    media_alvo = n_atribuidos / len(ancoras) if len(ancoras) else 0.0
     resumo_pauta = (
         resultado.groupby("pauta_sugerida", dropna=False)
         .size()

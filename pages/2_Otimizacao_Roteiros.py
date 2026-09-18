@@ -50,7 +50,7 @@ tolerancia_pct = st.sidebar.slider(
     "Tolerância da média (%)",
     min_value=0.0,
     max_value=50.0,
-    value=15.0,
+    value=5.0,
     step=1.0,
 )
 
