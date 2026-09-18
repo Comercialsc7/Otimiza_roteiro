@@ -1,0 +1,9 @@
+codigo_vendedor,nome,regiao,pauta,lat,lon
+V001,Ana Silva,VALE,D,-26.9194,-49.0661
+V002,Bruno Costa,VALE,M,-26.8750,-49.1200
+V003,Carla Souza,VALE,PC,-26.9500,-48.9800
+V004,Diego Lima,NORTE,D,-26.3045,-48.8461
+V005,Elena Rocha,NORTE,M,-26.2800,-48.9000
+V006,Fabio Nunes,NORTE,PC,-26.3300,-48.8200
+V007,Gina Alves,SUL,D,-28.6775,-49.3697
+V008,Hugo Dias,SUL,M,-28.6400,-49.4200
