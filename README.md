@@ -93,6 +93,12 @@ Não há secrets obrigatórios (Folium + OpenStreetMap).
 
 Checklist pós-deploy: Home abre → Carregar Bases com amostra → Otimização → mapa e tabela.
 
+Link direto (após login no Community Cloud):
+
+https://share.streamlit.io/deploy?repository=Comercialsc7/Otimiza_roteiro&branch=main&mainModule=Home.py
+
+Repos: o repositório é **privado** — autorize o Streamlit a acessar o GitHub da conta `Comercialsc7`.
+
 ## Extensão futura
 
 - Calibrar limiar km e tolerância com bases reais por região
